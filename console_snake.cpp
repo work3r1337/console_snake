@@ -1,5 +1,6 @@
 #include <exception>
 #include <iostream>
+#include <list>
 #include <ncurses.h>
 #include <random>
 
@@ -53,6 +54,7 @@ class Snake {
 	Game &game;
 	Point pos;
 	Direction direction = Direction::RIGHT;
+	std::list<Point> snake = {Point(0, 0)};
 
   public:
 	Snake(Game &g, int x, int y) : game(g), pos(x, y){};
@@ -60,23 +62,38 @@ class Snake {
 	void move() {
 		switch (direction) {
 		case Direction::UP:
-			pos.y = (pos.y - 1 + game.get_height()) % game.get_height();
+			snake.push_front(Point(snake.front().x,
+								   (snake.front().y - 1 + game.get_height()) %
+									   game.get_height()));
 			break;
 		case Direction::DOWN:
-			pos.y = (pos.y + 1) % game.get_height();
+			snake.push_front(Point(snake.front().x,
+								   (snake.front().y + 1) % game.get_height()));
 			break;
 		case Direction::LEFT:
-			pos.x = (pos.x - 1 + game.get_width()) % game.get_width();
+			snake.push_front(Point(
+				((snake.front().x - 1 + game.get_width()) % game.get_width()),
+				snake.front().y));
 			break;
 		case Direction::RIGHT:
-			pos.x = (pos.x + 1) % game.get_width();
+			snake.push_front(Point(((snake.front().x + 1) % game.get_width()),
+								   snake.front().y));
 			break;
 		}
+		snake.pop_back();
 	}
+
+	void grow() { snake.push_back(snake.back()); }
 
 	void change_direction(Direction d) { direction = d; }
 
-	Point get_position() { return pos; }
+	bool is_snake_part(Point p) {
+		for (auto iter = snake.begin(); iter != snake.end(); iter++) {
+			if (*iter == p)
+				return true;
+		}
+		return false;
+	}
 };
 
 class Food {
@@ -111,11 +128,9 @@ class Console_Renderer {
 	void render() {
 		for (size_t y = 0; y < game.get_height(); y++) {
 			for (size_t x = 0; x < game.get_width(); x++) {
-				if (snake.get_position().x == x &&
-					snake.get_position().y == y) {
+				if (snake.is_snake_part(Point(x, y))) {
 					printw("0");
-				} else if (x == food.get_position().x &&
-						   y == food.get_position().y) {
+				} else if (Point(x, y) == food.get_position()) {
 					printw("b");
 				} else {
 					printw("-");
@@ -128,8 +143,7 @@ class Console_Renderer {
 };
 
 bool check_collision(Food &food, Snake &snake) {
-	return (snake.get_position().x == food.get_position().x &&
-			snake.get_position().y == food.get_position().y);
+	return (snake.is_snake_part(food.get_position()));
 }
 
 int main() {
@@ -155,8 +169,10 @@ int main() {
 			break;
 		}
 		snake.move();
-		if (check_collision(food, snake))
+		if (check_collision(food, snake)) {
 			food.respawn();
+			snake.grow();
+		}
 		renderer.render();
 		napms(FRAME_TIME);
 		clear();
