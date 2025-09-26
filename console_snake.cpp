@@ -52,12 +52,11 @@ class Game {
 class Snake {
   private:
 	Game &game;
-	Point pos;
 	Direction direction = Direction::RIGHT;
 	std::list<Point> snake = {Point(0, 0)};
 
   public:
-	Snake(Game &g, int x, int y) : game(g), pos(x, y){};
+	Snake(Game &g) : game(g){};
 
 	void move() {
 		switch (direction) {
@@ -111,7 +110,7 @@ class Food {
 		p.y = distY(gen);
 	}
 
-	Food(Game &g, int x, int y) : game(g), p(x, y){};
+	Food(Game &g) : game(g){};
 
 	Point get_position() { return p; };
 };
@@ -126,8 +125,8 @@ class Console_Renderer {
 	Console_Renderer(Game &g, Snake &s, Food &f) : game(g), snake(s), food(f){};
 
 	void render() {
-		for (size_t y = 0; y < game.get_height(); y++) {
-			for (size_t x = 0; x < game.get_width(); x++) {
+		for (int y = 0; y < game.get_height(); y++) {
+			for (int x = 0; x < game.get_width(); x++) {
 				if (snake.is_snake_part(Point(x, y))) {
 					printw("0");
 				} else if (Point(x, y) == food.get_position()) {
@@ -148,8 +147,8 @@ bool check_collision(Food &food, Snake &snake) {
 
 int main() {
 	Game game(DEFAULT_HEIGHT, DEFAULT_WIDTH);
-	Snake snake(game, 1, 1);
-	Food food(game, 10, 10);
+	Snake snake(game);
+	Food food(game);
 	game.start_game();
 	Console_Renderer renderer(game, snake, food);
 	while (true) {
