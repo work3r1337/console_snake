@@ -1,6 +1,7 @@
 #include <exception>
 #include <iostream>
 #include <ncurses.h>
+#include <random>
 
 constexpr int FRAME_TIME = 600;
 constexpr int DEFAULT_HEIGHT = 25;
@@ -84,6 +85,15 @@ class Food {
 	Point p;
 
   public:
+	void respawn() {
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_int_distribution<> distX(0, game.get_width() - 1);
+		std::uniform_int_distribution<> distY(0, game.get_height() - 1);
+		p.x = distX(gen);
+		p.y = distY(gen);
+	}
+
 	Food(Game &g, int x, int y) : game(g), p(x, y){};
 
 	Point get_position() { return p; };
@@ -128,7 +138,7 @@ int main() {
 	Food food(game, 10, 10);
 	game.start_game();
 	Console_Renderer renderer(game, snake, food);
-	while (!check_collision(food, snake)) {
+	while (true) {
 		int ch = getch();
 		switch (ch) {
 		case KEY_UP:
@@ -145,6 +155,8 @@ int main() {
 			break;
 		}
 		snake.move();
+		if (check_collision(food, snake))
+			food.respawn();
 		renderer.render();
 		napms(FRAME_TIME);
 		clear();
