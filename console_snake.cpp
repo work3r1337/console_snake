@@ -163,9 +163,9 @@ class Console_Renderer {
 		for (int y = 0; y < game.get_height(); y++) {
 			for (int x = 0; x < game.get_width(); x++) {
 				if (snake.is_snake_part(Point(x, y))) {
-					mvprintw(y, x, "0");
+					mvprintw(y, x, "O");
 				} else if (Point(x, y) == food.get_position()) {
-					mvprintw(y, x, "b");
+					mvprintw(y, x, "0");
 				} else {
 					mvprintw(y, x, "-");
 				}
