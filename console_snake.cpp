@@ -110,6 +110,8 @@ class Snake {
 	}
 
 	size_t size() const { return snake.size(); }
+
+	Direction get_direction() const { return direction; }
 };
 
 class Food {
@@ -189,16 +191,20 @@ int main() {
 		int ch = getch();
 		switch (ch) {
 		case KEY_UP:
-			snake.change_direction(Direction::UP);
+			if (snake.get_direction() != Direction::DOWN)
+				snake.change_direction(Direction::UP);
 			break;
 		case KEY_DOWN:
-			snake.change_direction(Direction::DOWN);
+			if (snake.get_direction() != Direction::UP)
+				snake.change_direction(Direction::DOWN);
 			break;
 		case KEY_LEFT:
-			snake.change_direction(Direction::LEFT);
+			if (snake.get_direction() != Direction::RIGHT)
+				snake.change_direction(Direction::LEFT);
 			break;
 		case KEY_RIGHT:
-			snake.change_direction(Direction::RIGHT);
+			if (snake.get_direction() != Direction::LEFT)
+				snake.change_direction(Direction::RIGHT);
 			break;
 		}
 		if (check_collision(food, snake)) {
