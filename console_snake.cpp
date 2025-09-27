@@ -34,12 +34,17 @@ class Game {
 
 	void start_game() {
 		if (!initscr()) {
-			throw std::invalid_argument("Name must be less than 10 chars");
+			throw std::runtime_error("Failed to initialize ncurses");
 		}
-		curs_set(0);
-		nodelay(stdscr, true);
-		noecho();
-		keypad(stdscr, true);
+		try {
+			curs_set(0);
+			nodelay(stdscr, TRUE);
+			noecho();
+			keypad(stdscr, TRUE);
+		} catch (...) {
+			endwin();
+			throw;
+		}
 	}
 
 	void end_game() { endwin(); }
