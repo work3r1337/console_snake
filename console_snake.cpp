@@ -5,8 +5,8 @@
 #include <random>
 
 constexpr int FRAME_TIME = 600;
-constexpr int DEFAULT_HEIGHT = 25;
-constexpr int DEFAULT_WIDTH = 80;
+constexpr int DEFAULT_HEIGHT = 12;
+constexpr int DEFAULT_WIDTH = 40;
 
 enum class Direction { UP, DOWN, LEFT, RIGHT };
 
@@ -93,6 +93,16 @@ class Snake {
 		}
 		return false;
 	}
+
+	bool eat_itself() {
+		for (auto iter1 = snake.begin(); iter1 != snake.end(); iter1++) {
+			for (auto iter2 = std::next(iter1); iter2 != snake.end(); iter2++) {
+				if ((*iter1) == (*iter2))
+					return true;
+			}
+		}
+		return false;
+	}
 };
 
 class Food {
@@ -142,7 +152,7 @@ class Console_Renderer {
 };
 
 bool check_collision(Food &food, Snake &snake) {
-	return (snake.is_snake_part(food.get_position()));
+	return snake.is_snake_part(food.get_position());
 }
 
 int main() {
@@ -150,8 +160,9 @@ int main() {
 	Snake snake(game);
 	Food food(game);
 	game.start_game();
+	food.respawn();
 	Console_Renderer renderer(game, snake, food);
-	while (true) {
+	while (!snake.eat_itself()) {
 		int ch = getch();
 		switch (ch) {
 		case KEY_UP:
@@ -167,11 +178,11 @@ int main() {
 			snake.change_direction(Direction::RIGHT);
 			break;
 		}
-		snake.move();
 		if (check_collision(food, snake)) {
 			food.respawn();
 			snake.grow();
 		}
+		snake.move();
 		renderer.render();
 		napms(FRAME_TIME);
 		clear();
