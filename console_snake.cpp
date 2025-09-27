@@ -4,7 +4,7 @@
 #include <ncurses.h>
 #include <random>
 
-constexpr int FRAME_TIME = 600;
+constexpr int FRAME_TIME = 100;
 constexpr int DEFAULT_HEIGHT = 12;
 constexpr int DEFAULT_WIDTH = 40;
 
@@ -108,6 +108,8 @@ class Snake {
 		}
 		return false;
 	}
+
+	size_t size() { return snake.size(); }
 };
 
 class Food {
@@ -139,19 +141,33 @@ class Console_Renderer {
   public:
 	Console_Renderer(Game &g, Snake &s, Food &f) : game(g), snake(s), food(f){};
 
-	void render() {
+	void render_game() {
 		for (int y = 0; y < game.get_height(); y++) {
 			for (int x = 0; x < game.get_width(); x++) {
 				if (snake.is_snake_part(Point(x, y))) {
-					printw("0");
+					mvprintw(y, x, "0");
 				} else if (Point(x, y) == food.get_position()) {
-					printw("b");
+					mvprintw(y, x, "b");
 				} else {
-					printw("-");
+					mvprintw(y, x, "-");
 				}
 			}
 			printw("\n");
 		}
+		refresh();
+	}
+
+	void render_game_over() {
+		clear();
+		mvprintw(game.get_height() / 2, game.get_width() / 2 - 5, "GAME OVER");
+		mvprintw(game.get_height() / 2 + 1, game.get_width() / 2 - 5,
+				 "Score: %zu", snake.size() - 1);
+		refresh();
+	}
+
+	void render_score() {
+		mvprintw(game.get_height(), game.get_width() / 2 - 5, "Score: %zu",
+				 snake.size() - 1);
 		refresh();
 	}
 };
@@ -188,9 +204,12 @@ int main() {
 			snake.grow();
 		}
 		snake.move();
-		renderer.render();
+		renderer.render_game();
+		renderer.render_score();
 		napms(FRAME_TIME);
 		clear();
 	}
+	renderer.render_game_over();
+	napms(3000);
 	game.end_game();
 }
